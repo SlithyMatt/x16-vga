@@ -63,6 +63,7 @@ loadvram:   ; A = RAM bank,
 @loop:
    lda (ZP_PTR_1,x)  ; load from banked RAM
    sta VERA_data     ; store to next VRAM address
+   clc
    lda #1
    adc ZP_PTR_1
    sta ZP_PTR_1
@@ -79,7 +80,6 @@ loadvram:   ; A = RAM bank,
 
 start:
    jsr loadbank                  ; load bitmap and palette to banked RAM
-   
    lda #0
    sta VERA_ctrl
    VERA_SET_ADDR VRAM_layer0, 0  ; disable VRAM layer 0
@@ -115,11 +115,10 @@ lastbank:
    ldx #0
    ldy #((END_BM_ADDR-RAM_BANK)>>5)
    jsr loadvram
-   
    VERA_SET_ADDR VRAM_palette, 1 ; load palette into VRAM from banked RAM
    lda #PAL_BANK
-   ldx #((PAL_ADDR-RAM_BANK)>>5)
-   ldy #((PAL_END_ADDR-RAM_BANK)>>5)
+   ldx #((PAL_ADDR-RAM_WIN)>>5)
+   ldy #((PAL_END_ADDR-RAM_WIN)>>5)
    jsr loadvram
    
    VERA_SET_ADDR VRAM_hscale, 1  ; set display to 2x scale

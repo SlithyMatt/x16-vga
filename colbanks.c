@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
+#include <ctype.h>
 
 void combine_bins(char *newfn, char *iofn) {
    FILE *ifp;
@@ -64,6 +65,7 @@ void main(int argc, char **argv) {
    char bins[256][64];
    struct dirent *entry;
    DIR *dp;
+   int i;
    
    char *paramsfn = "bankparams.asm";
    
@@ -101,6 +103,9 @@ void main(int argc, char **argv) {
    
    bank = 0;
    while ((bank < 256) && (strlen(bins[bank]))) {
+      for (i = 0; i < strlen(bins[bank]); i++) {
+         bins[bank][i] = tolower(bins[bank][i]);
+      }
       fprintf(ofp,"b%d_filename: .asciiz \"%s\"\n", bank, bins[bank]);
       bank++;
    }
