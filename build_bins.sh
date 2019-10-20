@@ -20,6 +20,6 @@ if [ ! -f $pal ]; then
 fi
 
 ./convbin.exe $raw BITMAP.BIN 4000
-./pal12bit.exe $pal PAL.BIN
+./pal12bit.exe $pal PAL.BIN 1000
 
 

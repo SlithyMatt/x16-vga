@@ -42,5 +42,8 @@ void main(int argc, char **argv) {
          fwrite(&idata,1,1,ofp);
       }
    }
+   
+   fclose(ifp);
+   fclose(ofp);
 }   
 

@@ -8,9 +8,10 @@ void main(int argc, char **argv) {
    
    uint8_t idata[3];
    uint8_t odata[2];
+   int address;
 
    if (argc < 3) {
-      printf("Usage: %s [24-bit palette] [12-bit palette]\n", argv[0]);
+      printf("Usage: %s [24-bit palette] [12-bit palette] [load address]\n", argv[0]);
       return;
    }
 
@@ -26,8 +27,14 @@ void main(int argc, char **argv) {
    }
    
    // start 12-bit with default address
-   odata[0] = 0x00;
-   odata[1] = 0xA0;
+   if (argc >= 4) {
+      sscanf(argv[3],"%x",&address);
+   } else {
+      // set default load address to 0xA000
+      address = 0xA000;
+   }
+   odata[0] = (uint8_t) (address & 0x00FF);
+   odata[1] = (uint8_t) ((address & 0xFF00) >> 8);
    fwrite(odata,1,2,ofp);
    
    while (!feof(ifp)) {
