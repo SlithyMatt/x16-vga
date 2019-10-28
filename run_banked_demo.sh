@@ -34,7 +34,5 @@ rm *.BIN
 ./bankbin.exe $1 bitmap 0 A000
 ./pal12bit.exe $pal PAL.B009.BIN B000
 ./colbanks.exe
-cl65 -o bankedvga.prg -l bankedvga.list bankedvga.asm
+cl65 --cpu 65C02 -o bankedvga.prg -l bankedvga.list bankedvga.asm
 $X16EMU -prg bankedvga.prg -run
-
-

@@ -41,8 +41,7 @@ loadvram:   ; A = RAM bank,
             ; X = beginning of data offset >> 5,
             ; Y = end of data offset >> 5 (0 = whole bank)
    sta RAM_BANK
-   tya
-   pha               ; push end offset
+   phy               ; push end offset
    txa
    jsr getramaddr    ; get start address
    stx ZP_PTR_1
@@ -75,7 +74,7 @@ loadvram:   ; A = RAM bank,
    bne @loop
    lda ZP_PTR_1+1
    cmp ZP_PTR_2+1
-   bne @loop   
+   bne @loop
    rts
 
 start:
@@ -86,18 +85,17 @@ start:
    lda #$FE
    and VERA_data
    sta VERA_data
-   
+
    VERA_SET_ADDR VRAM_layer1, 1  ; configure VRAM layer 1
    lda #$E1                      ; 8bpp bitmap
    sta VERA_data
-   lda #$00                      ; 320x240
-   sta VERA_data
-   sta VERA_data                 ; tile map N/A
-   sta VERA_data
-   sta VERA_data                 ; bitmap base $04000
+   stz VERA_data                 ; 320x240
+   stz VERA_data                 ; tile map N/A
+   stz VERA_data
+   stz VERA_data                 ; bitmap base $04000
    lda #$10
    sta VERA_data
-   
+
    VERA_SET_ADDR VRAM_BITMAP, 1  ; load bitmap into VRAM from banked RAM
    jmp @loop
 @bank:
@@ -120,7 +118,7 @@ lastbank:
    ldx #((PAL_ADDR-RAM_WIN)>>5)
    ldy #((PAL_END_ADDR-RAM_WIN)>>5)
    jsr loadvram
-   
+
    VERA_SET_ADDR VRAM_hscale, 1  ; set display to 2x scale
    lda #64
    sta VERA_data
@@ -129,4 +127,3 @@ lastbank:
 end:
    nop
    jmp end  ; loop forever
-   

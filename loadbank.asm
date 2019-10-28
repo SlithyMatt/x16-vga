@@ -18,27 +18,24 @@ loadbank:
    cpx #BANKS_TO_LOAD
    beq end_loadbank
    stx RAM_BANK
-   txa
-   pha
+   phx
    jsr @load         ; load bank
    pla
    tax
    inx
    jmp @loop
-   
+
 @load:               ; load banked RAM using params starting at ZP_PTR_1
-   ldx 0
-   lda (ZP_PTR_1,x)
+   lda (ZP_PTR_1)
    pha               ; push filename length to stack
    jsr @inczp1
-   lda (ZP_PTR_1,x)
+   lda (ZP_PTR_1)
    pha               ; push filename address low byte to stack
    jsr @inczp1
-   lda (ZP_PTR_1,x)
+   lda (ZP_PTR_1)
    tay               ; Y = filename address high byte
    jsr @inczp1
-   pla               ; pull filename address low byte from stack
-   tax               ; X = filename address low byte
+   plx               ; pull filename address low byte from stack to X
    pla               ; pull filename length from stack to A
    jsr SETNAM        ; SetFileName(filename)
    lda #0
@@ -46,7 +43,7 @@ loadbank:
    ldy #>RAM_WIN
    jsr LOAD          ; LoadFile(Verify=0,Address=RAM_WIN)
    rts
-   
+
 @inczp1:             ; increment ZP_PTR_1
    pha               ; push A to stack
    lda #1
@@ -59,6 +56,5 @@ loadbank:
    pla               ; pull A back from stack
    rts
 
-end_loadbank:   
+end_loadbank:
    rts
-
