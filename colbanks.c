@@ -18,19 +18,19 @@ void combine_bins(char *newfn, char *iofn) {
    int address;
    uint8_t odata[8192];
    int odata_len;
-   
+
    ifp = fopen(newfn, "r");
    fread(addrhdr,1,2,ifp);
    addr1 = addrhdr[0] | (addrhdr[1] << 8);
    idata1_len = fread(idata1,1,8192,ifp);
    fclose(ifp);
-   
+
    ifp = fopen(iofn, "r");
    fread(addrhdr,1,2,ifp);
    addr2 = addrhdr[0] | (addrhdr[1] << 8);
    idata2_len = fread(idata2,1,8192,ifp);
    fclose(ifp);
-   
+
    if (addr1 < addr2) {
       address = addr1;
       memcpy(odata,idata1,idata1_len);
@@ -42,12 +42,12 @@ void combine_bins(char *newfn, char *iofn) {
       memcpy(odata+addr1-addr2,idata1,idata1_len);
       odata_len = addr1-addr2+idata1_len;
    }
-   
+
    addrhdr[0] = address & 0xFF;
    addrhdr[1] = (address & 0xFF00) >> 8;
-   
+
    sprintf(&iofn[strlen(iofn)-8],"%s",newfn);
-   
+
    ofp = fopen(iofn, "w");
    fwrite(addrhdr,1,2,ofp);
    fwrite(odata,1,odata_len,ofp);
@@ -58,27 +58,28 @@ void main(int argc, char **argv) {
    FILE *ofp;
    char *ifn;
    int ifn_len;
-      
+
    int num_banks = 0;
    int bank;
+   int filled_bank;
    char bank_str[4] = "000";
    char bins[256][64];
    struct dirent *entry;
    DIR *dp;
    int i;
-   
+
    char *paramsfn = "bankparams.asm";
-   
+
    if (argc >= 2) {
       paramsfn = argv[1];
    }
-   
+
    ofp = fopen(paramsfn, "w");
    if (ofp == NULL) {
       printf("Error opening %s for writing\n", paramsfn);
       return;
    }
-   
+
    for (bank=0; bank<256; bank++) {
       bins[bank][0] = '\0';
    }
@@ -87,34 +88,40 @@ void main(int argc, char **argv) {
    while (entry = readdir(dp)) {
       ifn = entry->d_name;
       ifn_len = strlen(ifn);
-      if (  (ifn_len > 9) 
+      if (  (ifn_len > 9)
             && !memcmp(&ifn[ifn_len-9],".B",2*sizeof(char))
             && !memcmp(&ifn[ifn_len-4],".BIN",4*sizeof(char)) ) {
          memcpy(bank_str,&ifn[ifn_len-7],3*sizeof(char));
          bank = atoi(bank_str);
          if (strlen(bins[bank])) {
-            combine_bins(ifn,bins[bank]);            
+            combine_bins(ifn,bins[bank]);
          } else {
             strcpy(bins[bank],ifn);
          }
+         if (bank+1 > num_banks) {
+            num_banks = bank+1;
+         }
       }
-   }   
+   }
    closedir(dp);
-   
+
    bank = 0;
-   while ((bank < 256) && (strlen(bins[bank]))) {
+   while (bank < num_banks) {
       for (i = 0; i < strlen(bins[bank]); i++) {
          bins[bank][i] = tolower(bins[bank][i]);
       }
-      fprintf(ofp,"b%d_filename: .asciiz \"%s\"\n", bank, bins[bank]);
+      if (strlen(bins[bank])) {
+         fprintf(ofp,"b%d_filename: .asciiz \"%s\"\n", bank, bins[bank]);
+      } else {
+         fprintf(ofp,"b%d_filename: .byte 0\n", bank);
+      }
       bank++;
    }
    fprintf(ofp,"end_filenames:\n");
 
-   num_banks = bank;
    fprintf(ofp,"BANKS_TO_LOAD = %d\n", num_banks);
    fprintf(ofp,"bankparams:\n");
-   
+
    for (bank = 0; bank < num_banks; bank++) {
       if (bank+1 == num_banks) {
          fprintf(ofp,".byte end_filenames-b%d_filename-1\n", bank);
@@ -122,10 +129,9 @@ void main(int argc, char **argv) {
          fprintf(ofp,".byte b%d_filename-b%d_filename-1\n", bank+1, bank);
       }
       fprintf(ofp,".byte <b%d_filename\n",bank);
-      fprintf(ofp,".byte >b%d_filename\n",bank);  
+      fprintf(ofp,".byte >b%d_filename\n",bank);
    }
-   
+
    fclose(ofp);
 
-}   
-
+}

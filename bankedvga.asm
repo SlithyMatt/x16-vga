@@ -9,11 +9,9 @@
 
 .include "loadbank.asm"
 
-LAST_BM_BANK   = 9
-END_BM_ADDR    = $AC00
-PAL_BANK       = 9
-PAL_ADDR       = $B000
-PAL_END_ADDR   = $B200
+PAL_BANK       = 10
+PAL_ADDR       = $A000
+PAL_END_ADDR   = $A200
 
 VRAM_BITMAP    = $04000
 
@@ -102,7 +100,7 @@ start:
    .byte 0
 @loop:
    lda @bank
-   cmp #LAST_BM_BANK
+   cmp #PAL_BANK
    beq lastbank
    ldx #0
    ldy #0
@@ -110,9 +108,6 @@ start:
    inc @bank
    jmp @loop
 lastbank:
-   ldx #0
-   ldy #((END_BM_ADDR-RAM_BANK)>>5)
-   jsr loadvram
    VERA_SET_ADDR VRAM_palette, 1 ; load palette into VRAM from banked RAM
    lda #PAL_BANK
    ldx #((PAL_ADDR-RAM_WIN)>>5)

@@ -37,11 +37,13 @@ loadbank:
    jsr @inczp1
    plx               ; pull filename address low byte from stack to X
    pla               ; pull filename length from stack to A
+   beq @load_return
    jsr SETNAM        ; SetFileName(filename)
    lda #0
    ldx #<RAM_WIN
    ldy #>RAM_WIN
    jsr LOAD          ; LoadFile(Verify=0,Address=RAM_WIN)
+@load_return:
    rts
 
 @inczp1:             ; increment ZP_PTR_1
